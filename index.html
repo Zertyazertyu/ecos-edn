@@ -186,6 +186,7 @@
         display: none;
     }
 
+
     .switcher {
         margin-top: 10px;
         margin-left: calc(100% - 105px);
@@ -198,6 +199,12 @@
         right: 20px; 
         z-index: 1000;
         padding: 10px 20px;
+    }
+
+    .container:has(> .switcher)::after {
+    content: "";
+    display: block;
+    height: 40;
     }
 
     .seedentry {
