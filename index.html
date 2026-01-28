@@ -1,0 +1,486 @@
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ECOS EDN</title>
+    <link rel="shortcut icon"
+        href="https://media.discordapp.net/attachments/757509431498899496/1043156813954170880/unknown.png" />
+
+</head>
+<style>
+        html.dark-mode {
+    background: black !important;
+    }
+
+    body.dark-mode {
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+    body.dark-mode img,
+    body.dark-mode video,
+    body.dark-mode canvas {
+        filter: invert(1) hue-rotate(180deg);
+    }
+
+</style>
+
+<style>
+
+    .container, .settings {
+        margin-left: auto;
+        margin-right: auto;
+        color: #333;
+        font-family: Roboto, sans-serif;
+        border-radius: 4px;
+        padding: 2%;
+        box-shadow: 0 0 0 1px #c5c5c5;
+        background-color: #f5f5f5;
+        display: block;
+        counter-reset: question-number;
+        max-width: 1000px;
+        margin-bottom: 10px;
+    }
+
+
+    .totalofqcm>* {
+        display: inline-block;
+    }
+
+    .totalofqcm>input {
+        width: 60px;
+    }
+
+    .question {
+        padding-top: 5px;
+        padding-bottom: 15px;
+        border-bottom: 3px dashed #d0d0d0;
+    }
+
+
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    input {
+        min-width: 20px;
+        min-height: 20px;
+    }
+
+    .info,
+    .modemenu::before {
+
+        font-size: 125%;
+        font-weight: bolder;
+        counter-reset: proposition;
+        counter-set: fautes 0;
+
+    }
+
+    .question>.info::after {
+
+        counter-increment: question-number;
+        content: "Question "counter(question-number);
+    }
+
+    .purpose {
+        width: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .purpose>span:not(.notiterable)::before {
+        counter-increment: proposition;
+        content: counter(proposition, lower-alpha) ". ";
+
+    }
+
+
+
+    .answerList {
+        padding-bottom: 5px;
+        padding-top: 5px;
+    }
+
+    .answerList>* {
+        margin: 3px;
+        padding: 3px;
+        border-radius: 2px;
+        align-items: stretch;
+        display: flex;
+        background-color: #e0e0e0;
+    }
+
+    .totalofqcm {
+        align-items: center;
+    }
+
+    .correct {
+        background-color: #b2edaf;
+    }
+
+    .wrong {
+        background-color: #f4b9b8;
+        counter-increment: fautes;
+    }
+
+    .missing {
+        background-color: #edde6f;
+        counter-increment: fautes;
+    }
+
+
+    .feedback {
+        padding: 10px;
+        border-left: 2px solid #747474;
+        font-weight: 400;
+        font-style: italic;
+        background-color: #cacaca;
+        border-radius: 3px;
+        margin-right: 8px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+
+    .fbtitle {
+        font-weight: 700;
+    }
+
+    .modtitle {
+        font-weight: 700;
+        font-size: 120%;
+        padding: 5px;
+    }
+
+
+    .result {
+        position: sticky;
+        top: 0;
+        border-bottom: 3px dashed #d0d0d0;
+        padding: 10px;
+        color: #212529;
+        background-color: #f5f5f5;
+        font-weight: 700;
+        opacity: 1;
+        z-index: 1000;
+
+    }
+
+    .field {
+        padding: 15px;
+
+    }
+
+    .field>* {
+        font-size: calc(.90375rem + .045vw);
+        border-radius: 2px;
+        height: 32px;
+        margin-right: 5px;
+        width: 60%;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .switcher {
+        margin-top: 10px;
+        margin-left: calc(100% - 105px);
+        border-radius: 4px;
+        font-size: 150%;
+
+        position: fixed;
+        cursor: pointer;
+        bottom: 20px;
+        right: 20px; 
+        z-index: 1000;
+        padding: 10px 20px;
+    }
+
+    .seedentry {
+        width: 80%;
+    }
+    
+
+    .modemenu::before{
+        content: "Choix du mode: ";
+    }
+    
+    .modemenu {
+        max-width: 60%;
+        margin-bottom: -5px;
+    }
+
+    .modechoice {
+        font-size: 125%;
+        font-weight: bold;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    .seepdf, .tcsscore {
+        white-space: nowrap;
+        font-style: italic;          
+        text-decoration: underline;  
+        border: 3px dashed #d0d0d0;   
+        display: inline-block;       
+        padding: 2px 6px;
+        
+    }
+    .dpStatement{
+        border-bottom: 3px dashed #d0d0d0;
+    }
+
+    .toggleColorMode{
+        margin-top: -35px;
+        margin-left: calc(100% - 105px);
+        border-radius: 4px;
+        font-size: 120%;
+        display: flex;
+        max-width: 30%;
+    }
+
+</style>
+
+<body>
+    <div class="container"></div>
+</body>
+<script>
+
+    async function fetchData(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error("Erreur lors du chargement des données");
+            }
+            return await decompressData(response);
+        } catch (error) {
+            console.error("Une erreur est survenue :", error.message);
+            return null;
+        }
+    }
+
+    async function decompressData(response) {
+        const buffer = await response.arrayBuffer();
+        try {
+            const stream = new Response(buffer).body.pipeThrough(new DecompressionStream("gzip"));
+            const decompressedBuffer = await new Response(stream).arrayBuffer();
+
+            const text = new TextDecoder().decode(decompressedBuffer);
+            return JSON.parse(text);
+        } catch (error) {
+            return JSON.parse(new TextDecoder().decode(buffer));
+        }
+    }
+
+
+    function createClassElement(type, ...classes) {
+        tmp = document.createElement(type)
+        for (cls of classes) {
+            tmp.classList.add(cls)
+        }
+        return tmp
+
+    }
+
+    const getIncrementedNumber = (() => {
+        let counter = 1;
+        return () => counter++;
+    })();
+
+
+
+    function createChoice(content, tag = false, no_prefix = false) {
+        qst = document.createElement('div')
+        mark = document.createElement('input')
+
+        if (tag) {
+            mark.type = 'radio'
+            mark.name = tag
+        }
+        else {mark.type = 'checkbox'}
+        choice = createClassElement('div', 'purpose')
+        qst.appendChild(mark)
+        tmp = document.createElement('span')
+        tmp.innerText = content
+        if (no_prefix) {tmp.classList.add('notiterable')}
+        choice.appendChild(tmp)
+        qst.appendChild(choice)
+        choice.addEventListener('click', function (e) {
+            this.parentNode.children[0].click()
+        })
+        return qst
+    }
+
+
+    function createSet(data, progressive_mode) {
+        Qcm_data = data
+        document.querySelector('.container').appendChild(createClassElement('div', 'result', 'hidden'))
+
+        for (elem of Qcm_data) {createQcmElement(elem)}
+
+        if (progressive_mode) {
+
+            searchlist = document.querySelectorAll(".question")
+
+            for (let i = 0; i < searchlist.length; i++ ) {
+                if (i > 0) { searchlist[i].classList.add('hidden') }
+            }
+
+            nextButton = createClassElement('button', 'switcher')
+            nextButton.innerText = "Suivant"
+            nextButton.onclick = correctAndNext
+            document.querySelector(".container").appendChild(nextButton)
+
+            centrer = createClassElement('div')
+            centrer.style.height = '30vh';
+            document.body.appendChild(centrer);
+
+        } else { 
+            verifyButton = createClassElement('button', 'switcher')
+            verifyButton.innerText = "Corriger"
+            verifyButton.onclick = verify
+            document.querySelector(".container").appendChild(verifyButton)
+            }
+    }
+
+
+    function createStartInterface() {
+        container = document.querySelector('.container')
+        title = createClassElement('div', 'info')
+        title.innerText = "ECOS"
+        container.appendChild(title)
+
+        createStationChoiceInterface(container)
+
+        startButton = createClassElement('button', 'switcher')
+        startButton.innerText = 'Démarrer'
+        startButton.addEventListener('click', function (e) {
+
+            for (station of document.querySelectorAll('div.station')) {
+                if (station.querySelector('input').checked) {
+                    prepareStation(station.children[0].url)
+                    break
+                }
+            }
+
+
+        })
+        container.appendChild(startButton)
+    }
+
+    function createStationChoiceInterface(container) {
+        const keys = Object.keys(index).sort((a, b) => {
+            const numA = Number(a);
+            const numB = Number(b);
+            const isNumA = !isNaN(numA);
+            const isNumB = !isNaN(numB);
+        
+            if (isNumA && isNumB) return numA - numB; 
+            if (isNumA) return -1;                    
+            if (isNumB) return 1;                     
+            return a.localeCompare(b);                
+        });
+
+        for (key of keys) {
+            moduleContainer = createClassElement('div', "answerList")
+            moduleTitle = createClassElement('div', "modtitle")
+            moduleTitle.innerText = '['+key+'] ' + index[key]['title'] + ' (' + index[key]['stations'].length + ')'
+            moduleContainer.appendChild(moduleTitle)
+            nbContent = 0
+
+            for (elt in index[key]['stations']) {
+                target = index[key]['stations'][elt]
+                tt = createChoice(target['origin'] + " - " + target['name'], "index", true)
+                tt.children[0].title = target['name']
+                tt.children[0].url = target['path']
+                tt.classList.add('station')
+
+                tt.classList.add('hidden')
+                moduleContainer.appendChild(tt)
+            }
+            moduleTitle.addEventListener('click', hideChoices)
+            container.appendChild(moduleContainer)
+        }
+    }
+
+    function prepareStation(url) {
+        document.querySelector('.container').innerHTML = '<div class="info">Chargement en cours</div'
+        data = fetchData(prefix+url)
+    }
+
+
+    function createProgressiveQuestionsStartInteface() {
+        moduleContainer = createClassElement('div', "answerList")
+                
+        for (elt of index[mode]) {
+                tt = createChoice(elt['title']+ ' ('+elt['size']+')', 'menu', true)
+                tt.children[0].quantity = elt['size']
+                tt.children[0].title = elt['title']
+                tt.children[0].url = elt['path']
+                tt.classList.add('serial')
+                tt.addEventListener('click', function (e) { document.querySelector('.totalofqcm').children[2].value = this.children[0].quantity })
+
+                if (mode== 'lca') {
+                    seePDF = createClassElement('text','seepdf')
+                    seePDF.innerText = "Voir l'article"
+                    seePDF.link = elt['pdfUrl'] 
+                    seePDF.addEventListener('click', function (e) { window.open(this.link, '_blank'); })
+                    tt.appendChild(seePDF)
+                }
+                moduleContainer.appendChild(tt)
+            }
+        return moduleContainer
+    }
+
+
+
+    function createSetFromModel(model, progressive_mode) {
+
+        const correspundingIndexes = []
+        const resToLoad = []
+
+        elemList = document.querySelectorAll('.serial>input[type="radio"]:checked')
+            for (elt of elemList) {
+                resToLoad.push(elt.url)
+                for (let i = 0; i < elt.quantity; i++) {correspundingIndexes.push([i, resToLoad.length - 1])}
+            }
+        
+            for (let i = 0; i < model.length; i++) {model[i] = correspundingIndexes[model[i]]}
+            for (let i = 0; i < resToLoad.length; i++) {resToLoad[i] = fetchData(resToLoad[i])}
+
+        Promise.all(resToLoad)
+            .then(loadedRes => {
+                for (let i = 0; i < model.length; i++) {model[i] = loadedRes[model[i][1]][model[i][0]]}
+                document.querySelector('.container').innerHTML = ""
+                document.querySelector('.settings').remove()
+                createSet(model, progressive_mode)
+            })
+    }
+
+
+
+
+    function hideChoices() {
+        if (this.parentNode.children[1].classList.contains('hidden')) {
+            for (elt of this.parentNode.querySelectorAll(':not(.modtitle)')) {elt.classList.remove('hidden')}
+        }
+        else {
+            for (elt of this.parentNode.querySelectorAll(':not(.modtitle)')) {elt.classList.add('hidden')}
+        }
+    }
+
+
+    
+    (async () => {
+        prefix = "https://raw.githubusercontent.com/Zertyazertyu/edn-ecos/main/"
+        index = await fetchData(prefix+ "index.gz")
+        console.log(index)
+        createStartInterface()
+    })()
+
+
+
+</script>
