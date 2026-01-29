@@ -49,7 +49,7 @@
         width: 60px;
     }
 
-    .question {
+    .question, .category-container, .category-content:has(+ .category-title) {
         padding-top: 5px;
         padding-bottom: 15px;
         border-bottom: 3px dashed #d0d0d0;
@@ -249,6 +249,41 @@
         max-width: 30%;
     }
 
+    .category-container{
+        display:flex;
+        flex-direction: rows;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .category-button {
+        font-size: 16;
+        margin-top: 5px;
+        border-radius: 2px;
+        color: #212529;
+        background-color: #f5f5f5;
+        cursor: pointer;
+        box-shadow: 0 0 0 1px #c5c5c5;
+    }
+
+
+    .category-title {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        font-size: 115%;
+        font-weight: bolder;
+        counter-reset: proposition;
+        counter-set: fautes 0;
+    }
+
+
+    .table{
+        width: auto;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+
 </style>
 
 <body>
@@ -286,7 +321,7 @@
     function createClassElement(type, ...classes) {
         tmp = document.createElement(type)
         for (cls of classes) {
-            tmp.classList.add(cls)
+            if (cls) tmp.classList.add(cls)
         }
         return tmp
 
@@ -319,6 +354,15 @@
             this.parentNode.children[0].click()
         })
         return qst
+    }
+
+    function hideChoices() {
+        if (this.parentNode.children[1].classList.contains('hidden')) {
+            for (elt of this.parentNode.querySelectorAll(':not(.modtitle)')) {elt.classList.remove('hidden')}
+        }
+        else {
+            for (elt of this.parentNode.querySelectorAll(':not(.modtitle)')) {elt.classList.add('hidden')}
+        }
     }
 
 
@@ -412,11 +456,83 @@
             container.appendChild(moduleContainer)
         }
     }
+    
 
-    function prepareStation(url) {
-        document.querySelector('.container').innerHTML = '<div class="info">Chargement en cours</div'
-        data = fetchData(prefix+url)
+    async function prepareStation(url) {
+        container = document.querySelector('.container')
+        container.innerHTML = ''
+        title = createClassElement('div', 'info')
+        title.innerText = "Chargement en cours"
+        container.appendChild(title)
+        data = await fetchData(prefix + '/ressources/' + url)
+
+        title.innerText = data['name']
+
+        catContainer = createClassElement('div', 'category-container')
+        container.appendChild(catContainer)
+        
+        addCategoryButton('Informations', 'infos', k => createCategory('information', data[k]), false)
+        addCategoryButton('Situation de départ', 'statement', k => createCategory('statement', data[k]), true)
+        addCategoryButton('Scénario patient', 'scenario', k => createCategory('scenario', data[k]), true)
+        addCategoryButton('Grille de correction', 'grid', k => createCorrectionGrid(data[k]), true)
+        addCategoryButton('Correction détaillée', 'correction', k => createCategory('correction', data[k]), true)
     }
+
+
+
+
+    function addCategoryButton(label, key, creator, isHidden) {
+        button = createClassElement('button', 'category-button')
+        button.innerText = label
+        catContainer.appendChild(button)
+        category = creator(key)
+        container.appendChild(category)
+        button.category = category
+        if (isHidden) category.classList.add('hidden')
+
+        button.addEventListener('click', function (e) {
+            for(elt of document.querySelectorAll('.category-button')) {
+                if (elt.category != this.category) elt.category.classList.add('hidden')
+            } this.category.classList.remove('hidden') })
+    }
+
+    function createCategory(categoryName, data) {
+        category = createClassElement('div', 'category', categoryName)
+
+        data.forEach(element => {
+            title = createClassElement('div', 'category-title')
+            title.innerText = element['title']
+
+            content = createClassElement('div', 'category-content')
+            content.innerHTML = element['content']
+
+            category.appendChild(title)
+            category.appendChild(content)
+
+        });
+
+        return category
+
+    }
+
+function createCorrectionGrid(data) {
+    grid = createClassElement('div', 'category', 'correction-grid', 'answerList')
+
+    for (title of Object.keys(data)) {
+        titleElem = createClassElement('div', 'modtitle')
+        titleElem.innerText = title
+        grid.appendChild(titleElem)
+
+        for (value of data[title]) {
+            line = createChoice(value[0], false, true)
+            grid.appendChild(line)
+        }
+    }
+
+    return grid
+}
+
+
 
 
     function createProgressiveQuestionsStartInteface() {
@@ -444,50 +560,18 @@
 
 
 
-    function createSetFromModel(model, progressive_mode) {
-
-        const correspundingIndexes = []
-        const resToLoad = []
-
-        elemList = document.querySelectorAll('.serial>input[type="radio"]:checked')
-            for (elt of elemList) {
-                resToLoad.push(elt.url)
-                for (let i = 0; i < elt.quantity; i++) {correspundingIndexes.push([i, resToLoad.length - 1])}
-            }
-        
-            for (let i = 0; i < model.length; i++) {model[i] = correspundingIndexes[model[i]]}
-            for (let i = 0; i < resToLoad.length; i++) {resToLoad[i] = fetchData(resToLoad[i])}
-
-        Promise.all(resToLoad)
-            .then(loadedRes => {
-                for (let i = 0; i < model.length; i++) {model[i] = loadedRes[model[i][1]][model[i][0]]}
-                document.querySelector('.container').innerHTML = ""
-                document.querySelector('.settings').remove()
-                createSet(model, progressive_mode)
-            })
-    }
 
 
 
 
-    function hideChoices() {
-        if (this.parentNode.children[1].classList.contains('hidden')) {
-            for (elt of this.parentNode.querySelectorAll(':not(.modtitle)')) {elt.classList.remove('hidden')}
-        }
-        else {
-            for (elt of this.parentNode.querySelectorAll(':not(.modtitle)')) {elt.classList.add('hidden')}
-        }
-    }
 
 
     
     (async () => {
-        prefix = "https://raw.githubusercontent.com/Zertyazertyu/edn-ecos/main/"
+        prefix = "https://raw.githubusercontent.com/Zertyazertyu/ecos-edn/main/"
         index = await fetchData(prefix+ "index.gz")
-        console.log(index)
         createStartInterface()
     })()
-
 
 
 </script>
