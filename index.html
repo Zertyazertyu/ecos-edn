@@ -269,7 +269,7 @@
 
     .category-title {
         margin-top: 15px;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         font-size: 115%;
         font-weight: bolder;
         counter-reset: proposition;
@@ -473,7 +473,7 @@
         
         addCategoryButton('Informations', 'infos', k => createCategory('information', data[k]), false)
         addCategoryButton('Situation de départ', 'statement', k => createCategory('statement', data[k]), true)
-        addCategoryButton('Scénario patient', 'scenario', k => createCategory('scenario', data[k]), true)
+        if ('scenario' in data)  addCategoryButton('Scénario patient', 'scenario', k => createCategory('scenario', data[k]), true)
         addCategoryButton('Grille de correction', 'grid', k => createCorrectionGrid(data[k]), true)
         addCategoryButton('Correction détaillée', 'correction', k => createCategory('correction', data[k]), true)
     }
