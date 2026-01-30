@@ -277,12 +277,19 @@
     }
 
 
-    .table{
+    table{
         width: auto;
         min-width: 0;
         max-width: 100%;
+        border-collapse:collapse;
+        transform-origin: top left;
     }
 
+    table, th, td{
+        border: 1px solid #d0d0d0;
+    }
+
+    
 
 </style>
 
@@ -290,6 +297,24 @@
     <div class="container"></div>
 </body>
 <script>
+
+function resizeTables() {
+    document.querySelectorAll('table').forEach(table => {
+        console.log(table)
+        parent = table.parentElement
+
+        style = getComputedStyle(parent)
+        availableWidth = parent.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+        tableHeight = table.offsetHeight
+
+        tableWidth = table.scrollWidth
+        ratio = Math.min(1, availableWidth / tableWidth)
+        table.style.transform = `scale(${ratio})`
+    });
+}
+
+    window.addEventListener('resize', resizeTables);
+
 
     async function fetchData(url) {
         try {
@@ -488,12 +513,15 @@
         category = creator(key)
         container.appendChild(category)
         button.category = category
+        resizeTables()
         if (isHidden) category.classList.add('hidden')
 
         button.addEventListener('click', function (e) {
             for(elt of document.querySelectorAll('.category-button')) {
                 if (elt.category != this.category) elt.category.classList.add('hidden')
-            } this.category.classList.remove('hidden') })
+            } 
+            this.category.classList.remove('hidden')
+        })
     }
 
     function createCategory(categoryName, data) {
