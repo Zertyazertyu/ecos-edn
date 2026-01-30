@@ -298,9 +298,9 @@
 </body>
 <script>
 
-function resizeTables() {
-    document.querySelectorAll('table').forEach(table => {
-        console.log(table)
+function resizeTables(element) {
+    if (element instanceof Event) element = document
+    element.querySelectorAll('table').forEach(table => {
         parent = table.parentElement
 
         style = getComputedStyle(parent)
@@ -513,7 +513,7 @@ function resizeTables() {
         category = creator(key)
         container.appendChild(category)
         button.category = category
-        resizeTables()
+        resizeTables(container)
         if (isHidden) category.classList.add('hidden')
 
         button.addEventListener('click', function (e) {
