@@ -516,21 +516,68 @@
     }
 
 function createCorrectionGrid(data) {
-    grid = createClassElement('div', 'category', 'correction-grid', 'answerList')
+    grid = createClassElement('div', 'category', 'correction-grid', 'answerList');
+
+    totalElem = createClassElement('div', 'modtitle');
+    totalElem.name = 'Total';
+    totalElem.value = 0;
+    totalElem.total = 0;
+    totalElem.lines = [];
 
     for (title of Object.keys(data)) {
-        titleElem = createClassElement('div', 'modtitle')
-        titleElem.innerText = title
-        grid.appendChild(titleElem)
+        titleElem = createClassElement('div', 'modtitle');
 
-        for (value of data[title]) {
-            line = createChoice(value[0], false, true)
-            grid.appendChild(line)
+        titleElem.name = title;
+        titleElem.total = data[title].length;
+        titleElem.value = 0;
+        titleElem.lines = [];
+        titleElem.totalElem = totalElem;
+
+        totalElem.lines.push(titleElem);
+        totalElem.total += titleElem.total;
+
+        calculateDisplayName(titleElem);
+        grid.appendChild(titleElem);
+
+        for ([label] of data[title]) {
+            line = createChoice(label, false, true);
+            line.titleElem = titleElem;
+
+            line.addEventListener('click', handleCorrectionClick);
+
+            titleElem.lines.push(line);
+            grid.appendChild(line);
         }
     }
 
-    return grid
+    calculateDisplayName(totalElem);
+    grid.appendChild(totalElem);
+
+    return grid;
 }
+
+
+function calculateDisplayName(elem) { elem.textContent = `${elem.name}\t${elem.value}/${elem.total}`; }
+
+
+
+
+function handleCorrectionClick(event) {
+    if (event.isTrusted && !(event.target instanceof HTMLInputElement && event.target.type === 'checkbox')) return;
+
+    line = event.target.closest('[data-choice]') || event.target.parentNode;
+    titleElem = line.titleElem;
+
+    titleElem.value = titleElem.lines.filter(l => l.querySelector('input')?.checked).length;
+
+    calculateDisplayName(titleElem);
+
+    totalElem = titleElem.totalElem;
+    totalElem.value = totalElem.lines.reduce((sum, t) => sum + t.value, 0);
+
+    calculateDisplayName(totalElem);
+}
+
 
 
 
