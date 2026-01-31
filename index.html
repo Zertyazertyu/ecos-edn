@@ -496,17 +496,16 @@ function resizeTables(element) {
         catContainer = createClassElement('div', 'category-container')
         container.appendChild(catContainer)
         
-        addCategoryButton('Informations', 'infos', k => createCategory('information', data[k]), false)
-        addCategoryButton('Situation de départ', 'statement', k => createCategory('statement', data[k]), true)
-        if ('scenario' in data)  addCategoryButton('Scénario patient', 'scenario', k => createCategory('scenario', data[k]), true)
-        addCategoryButton('Grille de correction', 'grid', k => createCorrectionGrid(data[k]), true)
-        addCategoryButton('Correction détaillée', 'correction', k => createCategory('correction', data[k]), true)
+        addCategoryButton('Situation de départ', 'statement', k => createCategory('statement', data[k]))
+        if ('scenario' in data)  addCategoryButton('Scénario patient', 'scenario', k => createCategory('scenario', data[k]))
+        addCategoryButton('Grille de correction', 'grid', k => createCorrectionGrid(data[k]))
+        addCategoryButton('Correction détaillée', 'correction', k => createCategory('correction', data[k]))
     }
 
 
 
 
-    function addCategoryButton(label, key, creator, isHidden) {
+    function addCategoryButton(label, key, creator) {
         button = createClassElement('button', 'category-button')
         button.innerText = label
         catContainer.appendChild(button)
@@ -514,7 +513,7 @@ function resizeTables(element) {
         container.appendChild(category)
         button.category = category
         resizeTables(container)
-        if (isHidden) category.classList.add('hidden')
+        category.classList.add('hidden')
 
         button.addEventListener('click', function (e) {
             for(elt of document.querySelectorAll('.category-button')) {
