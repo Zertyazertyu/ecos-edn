@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Générateur de SDD</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/suneditor/dist/css/suneditor.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/suneditor/dist/suneditor.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/suneditor/src/plugins/dialog.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/suneditor/src/plugins/table.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/suneditor/src/plugins/image.js"></script>
+
+    </head>
+    <body></body>
+    <style>
+
+        .hidden {
+            display: none;
+        }
+
+        .title-container {
+            display:flex;
+            gap:10px;
+            margin-bottom: 20px;
+        }
+
+        .title-container>* {
+            font-size: 20px;
+        }
+
+        .input-id {
+            max-width: 45px;
+        }
+
+        .input-title {
+            width: 500px;
+        }
+
+        .category {
+            margin-bottom: 20px;
+        }
+
+        .category-title-container {
+            font-size: larger;
+            display: flex;
+        }
+
+
+        input[type="checkbox"].category-title-checkbox {
+            pointer-events: none;
+        }
+
+
+        .export-button {
+            font-size: 20px;
+        }
+
+        .grid-part-field-title {
+            margin-left: 50px;
+        }
+
+        .grid-part-title, .grid-part-field-title {
+            width: 500px;
+        }
+
+        .grid-part {
+            margin-bottom: 15px;
+        }
+
+    </style>
+
+<script>
+
+      
+function createClassElement(type, ...classes) {
+    tmp = document.createElement(type)
+    for (cls of classes) { if (cls) tmp.classList.add(cls) }
+    return tmp
+    }
+
+function init() {
+    title = createClassElement('h1')
+    title.innerText = "Générateur de SDD"
+    document.body.appendChild(title) 
+
+    titleContainer = createTitle()
+    document.body.appendChild(titleContainer)
+
+    sdd = createCategory('Situation de départ', 'text', false)
+    document.body.appendChild(sdd)
+
+    scenario = createCategory('Scenario du patient', 'text', true)
+    document.body.appendChild(scenario)
+
+    grid = createCategory('Grille de correction', 'grid', false)
+    document.body.appendChild(grid)
+
+    correction = createCategory('Correction détaillée', 'text', true)
+    document.body.appendChild(correction)
+
+    exportButton = createClassElement('button', 'export-button')
+    exportButton.addEventListener('click', exportData)
+    exportButton.innerText = "Exporter"
+    document.body.appendChild(exportButton)
+
+    for(editor of document.querySelectorAll('.editor-container'))  makeEditor(editor)
+
+}
+
+function createTitle() {
+    titleContainer = createClassElement('div', 'title-container')
+    
+
+    inputId = createClassElement('input', 'input-id')
+    inputId.name = 'input-id'
+    inputId.maxLength = 3
+    inputId.placeholder = "SDD"
+    inputTitle = createClassElement('input', 'input-title')
+    inputTitle.name = 'input-title'
+    inputTitle.placeholder = "Titre de la station"
+
+    titleContainer.appendChild(inputId)
+    titleContainer.appendChild(inputTitle) 
+
+    return titleContainer
+}
+
+
+function createCategory(name, contentType, isAvoidable) {
+    category = createClassElement('div', 'category')
+
+    titleContainer = createCategoryTitle(name, isAvoidable)
+
+    switch(contentType) {
+        case 'text':
+            content = createTextContent()
+            break
+        case 'grid':
+            content = createGridContent()
+            break
+    }
+    if (isAvoidable) content.classList.add('hidden')
+    titleContainer.content = content
+
+    
+    category.appendChild(titleContainer)
+    category.appendChild(content)
+
+    return category
+
+}
+
+
+function createCategoryTitle(name, isAvoidable) {
+    titleContainer = createClassElement('div', 'category-title-container')
+
+    checkbox = createClassElement('input', 'category-title-checkbox')
+    checkbox.type = 'checkbox'
+
+    title = createClassElement('div', 'category-title')
+    title.innerText = name
+
+    titleContainer.appendChild(checkbox)
+    titleContainer.appendChild(title)
+
+
+    if (isAvoidable) titleContainer.addEventListener('click', function (e) {
+        this.content.classList.toggle('hidden')
+        this.children[0].checked = !this.children[0].checked
+        e.stopPropagation()
+    })
+    else checkbox.checked = true
+
+
+    return titleContainer
+}
+
+function createTextContent() {
+    content = createClassElement('div', 'content-text')
+    
+    field = createClassElement('div', 'editor-container')
+    content.appendChild(field)
+
+    return content
+}
+
+function makeEditor(element) {
+
+  const editor = SUNEDITOR.create(element, {
+    buttonList: [
+      ['undo', 'redo'],
+      ['fontSize', 'formatBlock'],
+      ['bold', 'underline', 'italic', 'strike'],
+      ['list', 'align'],
+      ['table'],
+      ['link']
+    ],
+    imageUploadUrl: '',
+    height: 300
+  });
+  element._editor = editor; 
+}
+
+
+function createGridContent() {
+    content = createClassElement('div', 'content-grid')
+    
+    gridPartCreator = createClassElement('button', 'grid-part-creator')
+    gridPartCreator.innerText = "Ajouter une partie"
+    content.appendChild(gridPartCreator)
+
+    gridPartCreator.addEventListener('click', function (e) {
+        this.parentNode.insertBefore(createGridPart(), this)
+    })
+
+
+    return content
+}
+
+function createGridPart() {
+    part = createClassElement('div', 'grid-part')
+
+    title = createClassElement('input', 'grid-part-title')
+    title.placeholder = "Titre de la catégorie"
+    part.appendChild(title)
+
+
+    deleteButton = createClassElement('button', 'grid-part-delete')
+    deleteButton.innerText = "Supprimer"
+    part.appendChild(deleteButton)
+
+    deleteButton.addEventListener('click', function (e) {
+        this.parentNode.remove()
+    })
+
+    addFieldButton = createClassElement('button', 'grid-part-add-field')
+    addFieldButton.innerText = "Ajouter un champ"
+    part.appendChild(addFieldButton)
+
+    addFieldButton.addEventListener('click', function (e) {
+        line = createClassElement('div', 'grid-part-field')
+
+        title = createClassElement('input', 'grid-part-field-title')
+        title.placeholder = "Titre du champ"
+        line.appendChild(title)
+
+        deleteButton = createClassElement('button', 'grid-part-field-delete')
+        deleteButton.innerText = "Supprimer"
+        line.appendChild(deleteButton)
+
+        deleteButton.addEventListener('click', function (e) {
+            this.parentNode.remove()
+        })
+        this.parentNode.appendChild(line)
+
+    })
+
+    return part
+
+
+
+
+
+}
+
+
+function exportData() {
+    data = {}
+
+    correspundings = {
+        'Situation de départ': 'statement',
+        'Scenario du patient': 'scenario',
+        'Correction détaillée': 'correction'
+    }
+
+    correspundings_keys = Object.keys(correspundings)
+
+    data['origin'] = "custom"
+    data['id'] = document.querySelector('.input-id').value
+    if (data['id'].length == 0 || data['id'].length > 3 || isNaN(data['id']) || data['id'].includes('.')) {
+        alert("L'identifiant de la station est incorrect")
+        return
+    }
+    if (parseInt(data['id']) == 0) data['id'] = 'Bonus'
+    data['name'] = document.querySelector('.input-title').value
+    if (data['name'].length == 0) {
+        alert("Le titre de la station est vide")
+        return
+    }
+
+    data['info'] = [{'title': 'Métadonnées de la station', 'content': 'Données non disponibles (station générée)'}]
+    
+    for (categoryTitle of document.querySelectorAll('.category-title-container')) {
+        if (categoryTitle.children[0].checked) {
+            title = categoryTitle.children[1].innerText
+            if (correspundings_keys.includes(title)) {
+                contentNode = categoryTitle.parentNode.querySelector('.editor-container')
+                data[correspundings[title]] = [{'title': title, 'content': contentNode._editor.getContents()}]
+            } else if (categoryTitle.children[1].innerText == 'Grille de correction') {
+                dataGrid = {}
+
+                for (gridPart of document.querySelectorAll('.grid-part')) {
+                    tmpList = []
+                    for (field of gridPart.querySelectorAll('.grid-part-field')) {
+                        text = field.querySelector('.grid-part-field-title').value
+                        if (!text) {
+                            alert('Il y a un champ vide dans la grille de correction')
+                            return;
+                        }
+                        tmpList.push([text, [0, 1]])
+                    }
+                    dataGrid[gridPart.querySelector('.grid-part-title').value] = tmpList
+            }
+
+            if (Object.keys(dataGrid).length == 0) {
+                alert('La grille de correction est vide')
+                return;
+            }
+            data['grid'] = dataGrid
+        }
+
+    }
+}
+    downloadDataAsJson(data)
+}
+
+function downloadDataAsJson(data) {
+
+    filename = `C-${ Date.now()}.json`;
+
+    jsonStr = JSON.stringify(data, null, 2);
+    blob = new Blob([jsonStr], { type: 'application/json' });
+    url = URL.createObjectURL(blob);
+
+    a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a); 
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+
+init()
+
+</script></html>
+
