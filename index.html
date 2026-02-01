@@ -499,7 +499,7 @@ function resizeTables(element) {
         addCategoryButton('Situation de départ', 'statement', k => createCategory('statement', data[k]))
         if ('scenario' in data)  addCategoryButton('Scénario patient', 'scenario', k => createCategory('scenario', data[k]))
         addCategoryButton('Grille de correction', 'grid', k => createCorrectionGrid(data[k]))
-        addCategoryButton('Correction détaillée', 'correction', k => createCategory('correction', data[k]))
+        if ('correction' in data) addCategoryButton('Correction détaillée', 'correction', k => createCategory('correction', data[k]))
     }
 
 

@@ -275,12 +275,12 @@ function exportData() {
     correspundings_keys = Object.keys(correspundings)
 
     data['origin'] = "custom"
-    data['id'] = document.querySelector('.input-id').value
-    if (data['id'].length == 0 || data['id'].length > 3 || isNaN(data['id']) || data['id'].includes('.')) {
+    data['sdd'] = document.querySelector('.input-id').value
+    if (data['sdd'].length == 0 || data['sdd'].length > 3 || isNaN(data['sdd']) || data['sdd'].includes('.')) {
         alert("L'identifiant de la station est incorrect")
         return
     }
-    if (parseInt(data['id']) == 0) data['id'] = 'Bonus'
+    if (parseInt(data['sdd']) == 0) data['sdd'] = 'Bonus'
     data['name'] = document.querySelector('.input-title').value
     if (data['name'].length == 0) {
         alert("Le titre de la station est vide")
