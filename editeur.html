@@ -275,7 +275,7 @@ function exportData() {
 
     correspundings_keys = Object.keys(correspundings)
 
-    data['origin'] = "custom"
+    data['origin'] = "martingale"
     data['sdd'] = document.querySelector('.input-id').value
     if (data['sdd'].length == 0 || data['sdd'].length > 3 || isNaN(data['sdd']) || data['sdd'].includes('.')) {
         alert("L'identifiant de la station est incorrect")
@@ -326,7 +326,7 @@ function exportData() {
 
 function downloadDataAsJson(data) {
 
-    filename = `C-${ Date.now()}.json`;
+    filename = `${ Date.now()}.json`;
 
     jsonStr = JSON.stringify(data, null, 2);
     blob = new Blob([jsonStr], { type: 'application/json' });
