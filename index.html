@@ -371,7 +371,7 @@ function resizeTables(element) {
         choice = createClassElement('div', 'purpose')
         qst.appendChild(mark)
         tmp = document.createElement('span')
-        tmp.innerText = content
+        tmp.innerHTML = content
         if (no_prefix) {tmp.classList.add('notiterable')}
         choice.appendChild(tmp)
         qst.appendChild(choice)
