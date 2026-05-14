@@ -3,7 +3,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ECOS EDN</title>
     <link rel="shortcut icon"
-        href="https://media.discordapp.net/attachments/757509431498899496/1043156813954170880/unknown.png" />
+        href="https://i1.sndcdn.com/artworks-u1ifVnPwquam2J9E-DR66vw-t1080x1080.jpg" />
 
 </head>
 <style>
@@ -76,7 +76,6 @@
         font-weight: bolder;
         counter-reset: proposition;
         counter-set: fautes 0;
-
     }
 
     .question>.info::after {
@@ -277,6 +276,26 @@
     }
 
 
+    .randomSelector {
+        display:flex;
+        margin-left: calc(100% - 224px);
+    }
+
+    .randomSelector * {
+        font-size: 110%;
+    }
+    .randomSelector>input {
+        max-width: 66px;
+        text-transform: uppercase;
+    }
+
+    .randomSelector>input::placeholder {
+        text-transform: none;
+    }
+
+    
+
+
     table{
         width: auto;
         min-width: 0;
@@ -423,11 +442,61 @@ function resizeTables(element) {
     }
 
 
+    function createRandomSelector() {
+        randomSelector = createClassElement('div', 'randomSelector')
+
+        codeMaker = createClassElement('button', 'createCodeButton')
+        codeMaker.innerText = 'Aléatoire'
+        randomSelector.appendChild(codeMaker)
+
+
+        codeInput = createClassElement('input', 'codeInput')
+        codeInput.id = 'randomInput'
+        codeInput.type = 'text'
+        codeInput.placeholder = 'Code'
+        codeInput.maxLength = 3
+        randomSelector.appendChild(codeInput)
+
+
+        codeEnter = createClassElement('button', 'ValidateCodeButton')
+        codeEnter.innerText = 'Valider'
+        randomSelector.appendChild(codeEnter)
+
+
+        flattenedIndex = Array()
+        for(key of Object.keys(index)) {
+            for (elt of index[key]['stations'])  flattenedIndex.push(elt)
+        } maxStation = flattenedIndex.length - 1
+
+
+
+        codeMaker.onclick = function (e) {
+            codeInput.value = Math.floor(Math.random() * maxStation).toString(16).toLocaleUpperCase().padStart(3, '0')
+        }
+
+
+        codeEnter.onclick = function (e) {
+            value = parseInt(codeInput.value, 16)
+            console.log(value)
+            if(codeInput.value.length != 3 || isNaN(value)) return;
+            
+            prepareStation(flattenedIndex[value]['path'], false)
+        }
+
+
+        return randomSelector
+    }
+
+
     function createStartInterface() {
         container = document.querySelector('.container')
+
         title = createClassElement('div', 'info')
         title.innerText = "ECOS"
         container.appendChild(title)
+
+        randomSelector = createRandomSelector()
+        container.appendChild(randomSelector)
 
         createStationChoiceInterface(container)
 
@@ -483,7 +552,7 @@ function resizeTables(element) {
     }
     
 
-    async function prepareStation(url) {
+    async function prepareStation(url, showTitle = true) {
         container = document.querySelector('.container')
         container.innerHTML = ''
         title = createClassElement('div', 'info')
@@ -491,7 +560,8 @@ function resizeTables(element) {
         container.appendChild(title)
         data = await fetchData(prefix + '/ressources/' + url)
 
-        title.innerText = data['name']
+        if (showTitle) title.innerText = data['name']
+        else title.remove()
 
         catContainer = createClassElement('div', 'category-container')
         container.appendChild(catContainer)
