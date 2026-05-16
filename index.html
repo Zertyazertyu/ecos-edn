@@ -474,6 +474,10 @@ function resizeTables(element) {
             codeInput.value = Math.floor(Math.random() * maxStation).toString(16).toLocaleUpperCase().padStart(3, '0')
         }
 
+        codeInput.addEventListener('keydown', function (e) {
+            if (e.key == 'Enter') codeEnter.click()
+        })
+
 
         codeEnter.onclick = function (e) {
             value = parseInt(codeInput.value, 16)
