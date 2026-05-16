@@ -465,7 +465,7 @@ function resizeTables(element) {
 
         flattenedIndex = Array()
         for(key of Object.keys(index)) {
-            for (elt of index[key]['stations'])  flattenedIndex.push(elt)
+            for (elt of index[key]['stations']) flattenedIndex.push(elt)
         } maxStation = flattenedIndex.length - 1
 
 
@@ -570,7 +570,7 @@ function resizeTables(element) {
         
         addCategoryButton('Situation de départ', 'statement', k => createCategory('statement', data[k]))
         if ('scenario' in data)  addCategoryButton('Scénario patient', 'scenario', k => createCategory('scenario', data[k]))
-        addCategoryButton('Grille de correction', 'grid', k => createCorrectionGrid(data[k]))
+        addCategoryButton('Grille de correction', 'grid', k => createCorrectionGrid(data[k], data['name']))
         if ('correction' in data) addCategoryButton('Correction détaillée', 'correction', k => createCategory('correction', data[k]))
     }
 
@@ -614,7 +614,14 @@ function resizeTables(element) {
 
     }
 
-function createCorrectionGrid(data) {
+function createCorrectionGrid(data, name) {
+    parent = createClassElement('div')
+
+    title = createClassElement('div', 'category-title')
+    title.innerText = name
+    parent.appendChild(title)
+
+
     grid = createClassElement('div', 'category', 'correction-grid', 'answerList');
 
     totalElem = createClassElement('div', 'modtitle');
@@ -652,7 +659,8 @@ function createCorrectionGrid(data) {
     calculateDisplayName(totalElem);
     grid.appendChild(totalElem);
 
-    return grid;
+    parent.appendChild(grid)
+    return parent;
 }
 
 
