@@ -479,7 +479,7 @@ function resizeTables(element) {
             value = parseInt(codeInput.value, 16)
             if(codeInput.value.length != 3 || isNaN(value)) return;
             
-            prepareStation(flattenedIndex[value]['path'], codeInput.value)
+            prepareStation(flattenedIndex[value]['path'], codeInput.value.toLocaleUpperCase())
         }
 
 
