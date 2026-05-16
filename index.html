@@ -477,10 +477,9 @@ function resizeTables(element) {
 
         codeEnter.onclick = function (e) {
             value = parseInt(codeInput.value, 16)
-            console.log(value)
             if(codeInput.value.length != 3 || isNaN(value)) return;
             
-            prepareStation(flattenedIndex[value]['path'], false)
+            prepareStation(flattenedIndex[value]['path'], codeInput.value)
         }
 
 
@@ -552,7 +551,7 @@ function resizeTables(element) {
     }
     
 
-    async function prepareStation(url, showTitle = true) {
+    async function prepareStation(url, alternateTitle = null) {
         container = document.querySelector('.container')
         container.innerHTML = ''
         title = createClassElement('div', 'info')
@@ -560,8 +559,7 @@ function resizeTables(element) {
         container.appendChild(title)
         data = await fetchData(prefix + '/ressources/' + url)
 
-        if (showTitle) title.innerText = data['name']
-        else title.remove()
+        title.innerText = (alternateTitle == null) ? data['name'] : 'Code de station: ' + alternateTitle
 
         catContainer = createClassElement('div', 'category-container')
         container.appendChild(catContainer)
